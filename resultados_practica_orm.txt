@@ -1,0 +1,216 @@
+(InteractiveConsole)
+>>> from appOrm.models import Producto,Cliente,Factura,DetalleFactura
+>>> p = Producto.objects.all()
+>>> p
+<QuerySet [<Producto: Gallito>, <Producto: Fiora>, <Producto: Coca Cola>]>
+>>> p= Producto(descripcion='Aceite Girazol',precio=1.50,stock=2000)
+>>> p.save()
+>>> p = Producto.objects.all()
+>>> p
+<QuerySet [<Producto: Aceite Girazol>, <Producto: Gallito>, <Producto: Fiora>, <Producto: Coca Cola>]>
+>>> Producto.objects.create(descripcion='Pepsi',precio=0.90,stock=10000)
+<Producto: Pepsi>
+>>> Producto.objects.create(descripcion='Mayoneza',precio=1.10,stock=300)
+<Producto: Mayoneza>
+>>> p= Producto(descripcion='Atum',precio=0.90,stock=400)
+>>> p.save()
+>>> p= Producto(descripcion='Azucar',precio=1.90,stock=800)
+>>> p.save()
+>>> p= Producto(descripcion='Nutri Leche',precio=0.95,stock=500)
+>>> p.save()
+>>> Producto.objects.create(descripcion='Aceite Favorita',precio=1.85,stock=180)
+<Producto: Aceite Favorita>
+inserte dos registros de clientes, 2 registros en el modelo factura con sus dos registros en el modelo detalleFactura con el ejemplo 1 y 2 respectivamente
+#insertar 2 registros de clientes
+>>> p = Producto.objects.get(descripcion='Mayoneza')
+>>> p.descripcion
+'Mayoneza'
+>>> c=Cliente.objects.create(ruc='999999',nombre='Tamara Pazmino',direccion='Milagro')
+>>> c.save()
+>>> c.producto.add(p)
+>>> c = Cliente.objects.all().values('id','nombre','producto')
+>>> c
+<QuerySet [{'id': 1, 'nombre': 'Michael', 'producto': 1}, {'id': 2, 'nombre': 'Juanito', 'producto': 1}, {'id': 3, 'nombre': 'Laura', 'producto': 5}, {'id': 5, 'nombre': 'Tamara Pazmino', 'producto': 9}]>
+>>> c=Cliente.objects.create(ruc='098222222',nombre='Pedrito Loor',direccion='Guayas')
+>>> c.save()
+>>> c.producto.add(p)
+>>> p = Producto.objects.get(descripcion='Coca Cola')
+>>> c.producto.add(p)
+>>> c = Cliente.objects.all().values('id','nombre','producto')
+>>> c
+<QuerySet [{'id': 1, 'nombre': 'Michael', 'producto': 1}, {'id': 2, 'nombre': 'Juanito', 'producto': 1}, {'id': 3, 'nombre': 'Laura', 'producto': 5}, {'id': 5, 'nombre': 'Tamara Pazmino', 'producto': 9}, {'id': 6, 'nombre': 'Pedrito Loor', 'producto': 1}, {'id': 6, 'nombre': 'Pedrito Loor', 'producto': 9}]>
+
+#insertar 2 registro en el modelo factura
+
+>>> c = Cliente.objects.get(nombre='Tamara Pazmino')
+>>> c
+<Cliente: Tamara Pazmino>
+>>> f = Factura(cliente=c,fecha='2020-08-02',total=0)
+>>> f.save()
+>>> f = Factura.objects.all().values('id','cliente__nombre')
+>>> f
+<QuerySet [{'id': 1, 'cliente__nombre': 'Laura'}, {'id': 2, 'cliente__nombre': 'Tamara Pazmino'}]>
+>>> c = Cliente.objects.all().values('id','nombre','direccion')
+>>> c
+<QuerySet [{'id': 1, 'nombre': 'Michael', 'direccion': 'Milagro'}, {'id': 2, 'nombre': 'Juanito', 'direccion': 'Milagro'}, {'id': 3, 'nombre': 'Laura', 'direccion': 'Guayas'}, {'id': 5, 'nombre': 'Tamara Pazmino', 'direccion': 'Milagro'}, {'id': 6, 'nombre': 'Pedrito Loor', 'direccion': 'Guayas'}]>
+>>> c = Cliente.objects.get(id=1)
+>>> f = Factura.objects.create(cliente=c,fecha='2020-08-02',total=0)
+>>> f = Factura.objects.all().values('id','cliente__nombre')
+>>> f
+<QuerySet [{'id': 3, 'cliente__nombre': 'Michael'}, {'id': 1, 'cliente__nombre': 'Laura'}, {'id': 2, 'cliente__nombre': 'Tamara Pazmino'}]>
+#insertar 2 registros en el detalle de factura
+>>> f = Factura.objects.get(cliente__nombre='Michael')
+>>> f
+<Factura: Michael>
+>>> f.fecha
+datetime.date(2020, 8, 2)
+>>> p = Producto.objects.get(descripcion='Coca Cola')
+>>> p
+<Producto: Coca Cola>
+>>> DetalleFactura.objects.create(factura=f,producto=p,cantidad=5,precio=1.60,subtotal=5*1.60)
+<DetalleFactura: DetalleFactura object (1)>
+>>> p = Producto.objects.get(descripcion='Fiora')
+>>> DetalleFactura.objects.create(factura=f,producto=p,cantidad=3,precio=1.60,subtotal=3*1.60)
+<DetalleFactura: DetalleFactura object (2)>
+>>> f = Factura.objects.get(cliente__nombre='Tamara Pazmino')
+>>> p = Producto.objects.get(descripcion='Nutri Leche')
+>>> d = DetalleFactura(factura=f,producto=p,cantidad=7,precio=0.95,subtotal=7*0.95)
+>>> d.save()
+>>> d = DetalleFactura.objects.all().values('factura__id','factura__cliente__nombre','producto__descripcion','cantidad','precio')
+>>> d
+<QuerySet [{'factura__id': 3, 'factura__cliente__nombre': 'Michael', 'producto__descripcion': 'Coca Cola', 'cantidad': 5.0, 'precio': 1.6},
+{'factura__id': 3, 'factura__cliente__nombre': 'Michael', 'producto__descripcion': 'Fiora', 'cantidad': 3.0, 'precio': 1.6}, {'factura__id': 2, 'factura__cliente__nombre': 'Tamara Pazmino', 'producto__descripcion': 'Nutri Leche', 'cantidad': 7.0, 'precio': 0.95}]>
+#Actualizar registros en los modelos
+>>> p = Producto.objects.get(descripcion='Azucar')
+>>> p.precio
+1.9
+>>> p.precio=1.3
+>>> p.save()
+>>> p.descripcion
+'Azucar'
+>>> p.precio
+1.3
+>>> Producto.objects.filter(descripcion='Azucar').update(precio=1.7)
+1
+#modificar 2 registros de producto, cliente, factura y detalleFactura con el ejemplo 1 y 2 respectivamente
+#Modificar 2 registro de producto
+>>> p = Producto.objects.get(id=10)
+>>> p.descripcion
+'Atum'
+>>> p.precio
+0.9
+>>> p.precio=1.10
+>>> p.save()
+>>> p.descripcion
+'Atum'
+>>> p.precio
+1.1
+>>> Producto.objects.filter(descripcion='Aceite Girazol').update(precio=1.75)
+1
+>>>
+#Modificar 2 registros de cliente
+>>> c = Cliente.objects.get(id=2)
+>>> c.nombre
+'Juanito'
+>>> c.direccion
+'Milagro'
+>>> c.direccion='Quito'
+>>> c.save()
+>>> c.nombre
+'Juanito'
+>>> c.direccion
+'Quito'
+>>> Cliente.objects.filter(nombre='Laura').update(direccion='Troncal')
+1
+>>>
+#Modificar 2 registros de factura
+
+>>> c = Cliente.objects.get(id=3)
+>>> c.nombre
+'Laura'
+>>> Factura.objects.filter(cliente__nombre='Michael').update(cliente=c)
+1
+>>> Factura.objects.all().values('id','cliente__nombre','fecha')
+<QuerySet [{'id': 1, 'cliente__nombre': 'Laura', 'fecha': datetime.date(2020, 7, 30)}, {'id': 2, 'cliente__nombre': 'Tamara Pazmino', 'fecha': datetime.date(2020, 8, 2)}, {'id': 3, 'cliente__nombre': 'Laura', 'fecha': datetime.date(2020, 8, 2)}]>
+>>> c = Cliente.objects.get(nombre='Tamara Pazmino')
+>>> f = Factura.objects.get(cliente=c)
+<Factura: Tamara Pazmino>
+>>> c = Cliente.objects.get(nombre='Pedrito Loor')
+>>> c.id
+6
+>>> f.cliente=c
+>>> f.save()
+>>> Factura.objects.all().values('id','cliente__nombre','fecha')
+<QuerySet [{'id': 1, 'cliente__nombre': 'Laura', 'fecha': datetime.date(2020, 7, 30)}, {'id': 2, 'cliente__nombre': 'Pedrito Loor', 'fecha': datetime.date(2020, 8, 2)}, {'id': 3, 'cliente__nombre': 'Laura', 'fecha': datetime.date(2020, 8, 2)}]>
+>>>
+#Modificar 2 registro de DetalleFactura
+>>> d = DetalleFactura.objects.all().values('factura__id','factura__cliente__nombre','producto__descripcion','cantidad','precio')
+>>> d
+<QuerySet [{'factura__id': 3, 'factura__cliente__nombre': 'Laura', 'producto__descripcion': 'Coca Cola', 'cantidad': 5.0, 'precio': 1.6}, {'factura__id': 3, 'factura__cliente__nombre': 'Laura', 'producto__descripcion': 'Fiora', 'cantidad': 3.0, 'precio': 1.6}, {'factura__id': 2,
+'factura__cliente__nombre': 'Pedrito Loor', 'producto__descripcion': 'Nutri Leche', 'cantidad': 7.0, 'precio': 0.95}]>
+>>> p = Producto.objects.get(descripcion='Mayoneza')
+>>> f = Factura.objects.get(id=3)
+>>> DetalleFactura.objects.filter(producto__descripcion='Fiora').update(producto=p)
+1
+>>> d = DetalleFactura.objects.all().values('factura__id','factura__cliente__nombre','producto__descripcion','cantidad','precio')
+>>> d
+<QuerySet [{'factura__id': 3, 'factura__cliente__nombre': 'Laura', 'producto__descripcion': 'Coca Cola', 'cantidad': 5.0, 'precio': 1.6}, {'factura__id': 3, 'factura__cliente__nombre': 'Laura', 'producto__descripcion': 'Mayoneza', 'cantidad': 3.0, 'precio': 1.6}, {'factura__id':
+2, 'factura__cliente__nombre': 'Pedrito Loor', 'producto__descripcion': 'Nutri Leche', 'cantidad': 7.0, 'precio': 0.95}]>
+>>> p = Producto.objects.get(descripcion='Aceite Favorita')
+>>> f = Factura.objects.get(id=2)
+>>> d = DetalleFactura.objects.get(factura=f)
+>>> d.producto = p
+>>> d.save()
+>>> d = DetalleFactura.objects.all().values('factura__id','factura__cliente__nombre','producto__descripcion','cantidad','precio')
+>>> d
+<QuerySet [{'factura__id': 3, 'factura__cliente__nombre': 'Laura', 'producto__descripcion': 'Coca Cola', 'cantidad': 5.0, 'precio': 1.6}, {'factura__id': 3, 'factura__cliente__nombre': 'Laura', 'producto__descripcion': 'Mayoneza', 'cantidad': 3.0, 'precio': 1.6}, {'factura__id':
+2, 'factura__cliente__nombre': 'Pedrito Loor', 'producto__descripcion': 'Aceite Favorita', 'cantidad': 7.0, 'precio': 0.95}]>
+>>>
+#Eliminar registos en los modelos
+>>> p = Producto.objects.get(id=6)
+>>> p.descripcion
+'Gallito'
+>>> p.delete()
+(1, {'appOrm.Cliente_producto': 0, 'appOrm.DetalleFactura': 0, 'appOrm.Producto': 1})
+>>> Producto.objects.filter(descripcion='Atum').delete()
+(1, {'appOrm.Cliente_producto': 0, 'appOrm.DetalleFactura': 0, 'appOrm.Producto': 1})
+>>>
+#Querys en un modelo
+>>> p=Producto.objects.all()
+>>> p
+<QuerySet [<Producto: Aceite Favorita>, <Producto: Nutri Leche>, <Producto: Azucar>, <Producto: Mayoneza>, <Producto: Pepsi>, <Producto: Aceite Girazol>, <Producto: Fiora>, <Producto: Coca Cola>]>
+>>> p=Producto.objects.get(id=5)
+>>> p
+<Producto: Fiora>
+>>> Producto.objects.filter(id__lte=5)
+<QuerySet [<Producto: Fiora>, <Producto: Coca Cola>]>
+
+>>> Producto.objects.exclude(descripcion__icontains='Cola')
+<QuerySet [<Producto: Aceite Favorita>, <Producto: Nutri Leche>, <Producto: Azucar>, <Producto: Mayoneza>, <Producto: Pepsi>, <Producto: Aceite Girazol>, <Producto: Fiora>]>
+
+>>> Producto.objects.filter(id__gte=4)
+<QuerySet [<Producto: Aceite Favorita>, <Producto: Nutri Leche>, <Producto: Azucar>, <Producto: Mayoneza>, <Producto: Pepsi>, <Producto: Aceite Girazol>, <Producto: Fiora>]>
+>>>
+>>> Producto.objects.filter(id__gt=4).values('id','descripcion')
+<QuerySet [{'id': 13, 'descripcion': 'Aceite Favorita'}, {'id': 12, 'descripcion': 'Nutri Leche'}, {'id': 11, 'descripcion': 'Azucar'}, {'id': 9, 'descripcion': 'Mayoneza'}, {'id': 8, 'descripcion': 'Pepsi'}, {'id': 7, 'descripcion': 'Aceite Girazol'}, {'id': 5, 'descripcion': 'Fiora'}]>
+>>>
+>>> Producto.objects.filter(id__lt=4).values('id','descripcion')
+<QuerySet [{'id': 1, 'descripcion': 'Coca Cola'}]>
+>>>
+>>> Producto.objects.filter(descripcion='Coca Cola').values('id','descripcion')
+<QuerySet [{'id': 1, 'descripcion': 'Coca Cola'}]>
+>>>
+#Querys de varios modelos (relacionados)
+>>> Factura.objects.filter(cliente__nombre='Pedrito Loor')
+<QuerySet [<Factura: Pedrito Loor>]>
+>>>
+>>> c= Cliente.objects.get(nombre='Laura')
+>>> c.factura_set.all()
+<QuerySet [<Factura: Laura>, <Factura: Laura>]>
+>>> c.factura_set.filter(id=3)
+<QuerySet [<Factura: Laura>]>
+>>> Factura.objects.select_related('cliente').filter(cliente__nombre='Pedrito Loor')
+<QuerySet [<Factura: Pedrito Loor>]>
+
+>>> Cliente.objects.prefetch_related('producto').filter(nombre='Laura').values('nombre','producto__descripcion')
+<QuerySet [{'nombre': 'Laura', 'producto__descripcion': 'Fiora'}]>
